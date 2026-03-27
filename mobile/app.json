@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "VetScribe",
+    "slug": "vet-scribe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0a0a"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vetscribe.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "VetScribe needs microphone access to record consultations."
+      }
+    },
+    "android": {
+      "package": "com.vetscribe.app",
+      "permissions": ["RECORD_AUDIO"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-av"
+    ],
+    "scheme": "vetscribe"
+  }
+}
