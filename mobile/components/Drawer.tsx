@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
@@ -48,8 +48,10 @@ export default function Drawer({
 }: DrawerProps) {
   const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const [isVisible, setIsVisible] = useState(isOpen);
 
   useEffect(() => {
+    if (isOpen) setIsVisible(true);
     Animated.parallel([
       Animated.timing(translateX, {
         toValue: isOpen ? 0 : -DRAWER_WIDTH,
@@ -61,7 +63,9 @@ export default function Drawer({
         duration: ANIMATION_DURATION,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      if (!isOpen) setIsVisible(false);
+    });
   }, [isOpen, translateX, overlayOpacity]);
 
   const handleLongPress = useCallback(
@@ -136,7 +140,7 @@ export default function Drawer({
     );
   };
 
-  if (!isOpen && translateX.__getValue() === -DRAWER_WIDTH) {
+  if (!isVisible) {
     return null;
   }
 

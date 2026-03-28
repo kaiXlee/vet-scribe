@@ -7,7 +7,25 @@ from sqlalchemy.orm import DeclarativeBase
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:password@localhost:5432/vetscribe")
+def _build_database_url() -> str:
+    """
+    Build the async SQLAlchemy database URL.
+
+    Locally: reads DATABASE_URL directly from .env.
+    On AWS App Runner: individual DB_* env vars are injected from Secrets Manager
+    because App Runner cannot inject a secret field into the middle of a string.
+    """
+    if url := os.getenv("DATABASE_URL"):
+        return url
+
+    host = os.getenv("DB_HOST", "localhost")
+    port = os.getenv("DB_PORT", "5432")
+    name = os.getenv("DB_NAME", "vetscribe")
+    user = os.getenv("DB_USER", "postgres")
+    password = os.getenv("DB_PASSWORD", "password")
+    return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
+
+DATABASE_URL = _build_database_url()
 
 engine = create_async_engine(
     DATABASE_URL,

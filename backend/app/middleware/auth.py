@@ -25,6 +25,10 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         if request.method == "OPTIONS":
             return await call_next(request)
 
+        # Health check endpoint should be publicly accessible
+        if request.url.path == "/health":
+            return await call_next(request)
+
         # WebSocket connections send the key as a query param; skip header check
         if request.headers.get("upgrade", "").lower() == "websocket":
             return await call_next(request)
