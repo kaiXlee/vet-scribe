@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { PauseIcon, RecordDotIcon } from './Icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -36,9 +37,11 @@ export default function PulsingIndicator({ isRecording }: PulsingIndicatorProps)
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.dot, animatedStyle]} />
-      <Text style={styles.label}>
-        {isRecording ? '● REC' : '⏸ PAUSED'}
+      <Animated.View style={animatedStyle}>
+        {isRecording ? <RecordDotIcon size={14} color="#ef4444" /> : <PauseIcon size={14} color="#94a3b8" />}
+      </Animated.View>
+      <Text style={[styles.label, !isRecording && styles.labelPaused]}>
+        {isRecording ? '錄音中' : '已暫停'}
       </Text>
     </View>
   );
@@ -50,16 +53,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  dot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#ff3b30',
-  },
   label: {
-    color: '#ff3b30',
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 1,
+    color: '#ef4444',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
+  labelPaused: {
+    color: '#94a3b8',
   },
 });

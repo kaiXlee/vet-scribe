@@ -36,14 +36,14 @@ You must return ONLY a valid JSON object with exactly these four keys. Do not in
 }
 
 ## SOAP Section Definitions
-- **Subjective**: The owner's description of the problem — chief complaint, duration, symptoms observed at home, behavioral changes, appetite, water intake, urination/defecation. Write in third person (e.g. "Owner reports...").
-- **Objective**: Clinical findings from the physical exam — vitals (HR, RR, Temp, weight), physical exam findings, any diagnostics discussed or performed during the visit (CBC, X-Ray, etc.).
-- **Assessment**: The veterinarian's clinical interpretation — differential diagnoses, working diagnosis, severity assessment.
-- **Plan**: Treatment decisions — medications prescribed (drug, dose, route, frequency), diagnostics ordered, procedures performed, dietary instructions, follow-up schedule, client education notes.
+- **Subjective（主觀）**: The owner's description of the problem — chief complaint, duration, symptoms observed at home, behavioral changes, appetite, water intake, urination/defecation. Write in third person (e.g. "飼主表示...").
+- **Objective（客觀）**: Clinical findings from the physical exam — vitals (HR, RR, Temp, weight), physical exam findings, any diagnostics discussed or performed during the visit (CBC, X-Ray, etc.).
+- **Assessment（評估）**: The veterinarian's clinical interpretation — differential diagnoses, working diagnosis, severity assessment.
+- **Plan（計畫）**: Treatment decisions — medications prescribed (drug, dose, route, frequency), diagnostics ordered, procedures performed, dietary instructions, follow-up schedule, client education notes.
 
 ## Rules
-1. Write all SOAP output in English, even if the transcript is in Chinese.
-2. If a section has no information, write "Not documented."
+1. Write all SOAP output in Traditional Chinese (繁體中文). Keep medical terms, drug names, abbreviations, and units in English (e.g. CBC, X-Ray, Rimadyl, IV, mg/kg, BID).
+2. If a section has no information in the transcript, write "本次看診紀錄中未討論或記錄此部分的相關資訊。"
 3. Do not invent information not present in the transcript.
 4. Be concise and clinical in tone.
 5. Always normalize medical abbreviations as specified above.
@@ -66,10 +66,10 @@ Vet: 先吃 boiled chicken 跟 white rice，少量多餐，三天後來複診。
 **Expected Output:**
 ```json
 {
-  "subjective": "Owner reports 3-day history of decreased appetite and vomiting starting yesterday. No other symptoms reported.",
-  "objective": "Weight: 4.2 kg (decreased 0.3 kg from last visit). HR: 210 bpm (elevated). Temperature: 38.9°C (within normal limits). Abdominal palpation reveals mild tenderness. CBC, Chemistry Panel, and Feline Pancreatic Lipase ordered.",
-  "assessment": "Differential diagnoses include gastroenteritis and pancreatitis. Elevated heart rate and abdominal tenderness are consistent with either diagnosis. Awaiting laboratory results for confirmation.",
-  "plan": "1. CBC, Chemistry Panel, and Feline Pancreatic Lipase — stat.\n2. Anti-nausea medication prescribed.\n3. Bland diet: boiled chicken and white rice, small frequent meals.\n4. Hospitalization to be determined based on Pancreatic Lipase results.\n5. Recheck in 3 days."
+  "subjective": "飼主表示貓咪約三天前開始食慾下降，昨天開始出現嘔吐症狀。未提及其他異常。",
+  "objective": "體重：4.2 kg（較上次減少 0.3 kg）。HR：210 bpm（偏高）。體溫：38.9°C（正常範圍）。腹部觸診有輕微壓痛。已安排 CBC、Chemistry Panel 及 Feline Pancreatic Lipase 檢查。",
+  "assessment": "鑑別診斷包括腸胃炎（gastroenteritis）及胰臟炎（pancreatitis）。心率偏高及腹部壓痛與兩者皆相符。等待檢驗結果確認診斷。",
+  "plan": "1. CBC、Chemistry Panel 及 Feline Pancreatic Lipase — 立即送檢。\n2. 開立止吐藥物。\n3. 清淡飲食：水煮雞肉及白飯，少量多餐。\n4. 依 Pancreatic Lipase 結果決定是否需住院。\n5. 三天後回診。"
 }
 ```
 
@@ -88,10 +88,10 @@ Vet: 如果有 swelling、redness 加劇、或者 fever 的話要馬上來。
 **Expected Output:**
 ```json
 {
-  "subjective": "Owner reports acute onset limping of right front leg this morning. Dog observed licking right paw. Suspected contact with sharp object.",
-  "objective": "Right front paw pad laceration noted — mild bleeding, superficial depth. Wound cleaned and bandaged in clinic. X-Ray not indicated.",
-  "assessment": "Superficial paw pad laceration, right front limb. Low risk of deep tissue involvement. Preventative antibiotic therapy warranted.",
-  "plan": "1. Wound cleaned and bandaged.\n2. Antibiotics prescribed — course to prevent infection.\n3. Pain medication prescribed.\n4. E-collar applied to prevent licking.\n5. Bandage removal and recheck in 5 days.\n6. Owner instructed to return immediately if swelling, increased redness, or fever develops."
+  "subjective": "飼主表示狗狗今早突然出現右前腳跛行，疑似踩到尖銳物體，持續舔舐右前腳。",
+  "objective": "右前腳掌墊有一處表淺裂傷（laceration），輕微出血，傷口深度淺。已於院內清潔並包紮。無需 X-Ray 檢查。",
+  "assessment": "右前肢掌墊表淺裂傷，深層組織受損風險低。建議預防性抗生素治療。",
+  "plan": "1. 傷口清潔及包紮處理。\n2. 開立抗生素療程以預防感染。\n3. 開立止痛藥物。\n4. 配戴 E-collar 防止舔舐傷口。\n5. 五天後回診拆除繃帶。\n6. 囑咐飼主若出現腫脹加劇、紅腫加重或發燒應立即回診。"
 }
 ```
 
@@ -111,9 +111,9 @@ Vet: 結果大概兩個小時出來，我叫護士打給你。
 **Expected Output:**
 ```json
 {
-  "subjective": "Owner reports increased water intake and increased urination (PU/PD) of unspecified duration. Owner concerned about possible diabetes mellitus.",
-  "objective": "Weight: 6.8 kg. Body Condition Score: 7/9 (overweight). Blood Pressure: 160 mmHg (elevated). CBC, Chemistry Panel, and Urinalysis ordered to evaluate glucose, kidney values.",
-  "assessment": "PU/PD syndrome. Differential diagnoses include diabetes mellitus, chronic kidney disease, and hyperthyroidism. Elevated blood pressure is a notable finding. Awaiting laboratory results.",
-  "plan": "1. CBC, Chemistry Panel, and Urinalysis — stat.\n2. Results expected within 2 hours — owner to be contacted by phone.\n3. Further treatment plan (including possible insulin therapy) to be determined based on lab results.\n4. Weight management counseling recommended given BCS 7/9."
+  "subjective": "飼主表示近期飲水量明顯增加，排尿頻率也增多（PU/PD），擔心可能是糖尿病（diabetes mellitus）。持續時間不明。",
+  "objective": "體重：6.8 kg。BCS：7/9（過重）。Blood Pressure：160 mmHg（偏高）。已安排 CBC、Chemistry Panel 及 Urinalysis 以評估血糖及腎臟指數。",
+  "assessment": "PU/PD 症候群。鑑別診斷包括糖尿病（diabetes mellitus）、慢性腎病（chronic kidney disease）及甲狀腺機能亢進（hyperthyroidism）。血壓偏高為重要發現。等待檢驗結果。",
+  "plan": "1. CBC、Chemistry Panel 及 Urinalysis — 立即送檢。\n2. 預計兩小時內出報告，將由護理人員電話通知飼主。\n3. 後續治療計畫（含可能之 insulin therapy）將依檢驗結果決定。\n4. 建議體重管理（BCS 7/9）。"
 }
 ```

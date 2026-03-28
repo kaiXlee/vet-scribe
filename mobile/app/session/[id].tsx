@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import Drawer from '../../components/Drawer';
+import { MenuIcon, RetryIcon, WarningIcon } from '../../components/Icons';
 import SOAPNoteView from '../../components/SOAPNoteView';
 import {
   deleteSession,
@@ -49,7 +50,7 @@ export default function SessionDetailScreen() {
       const data = await getSession(id);
       setSession(data);
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to load session');
+      Alert.alert('錯誤', err instanceof Error ? err.message : '無法載入看診紀錄');
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +97,7 @@ export default function SessionDetailScreen() {
       const updated = await retrySoap(id);
       setSession(updated);
     } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to retry SOAP generation');
+      Alert.alert('錯誤', err instanceof Error ? err.message : 'SOAP 重試失敗');
     } finally {
       setIsRetrying(false);
     }
@@ -125,7 +126,7 @@ export default function SessionDetailScreen() {
           await loadSession();
         }
       } catch (err) {
-        Alert.alert('Error', err instanceof Error ? err.message : 'Failed to rename session');
+        Alert.alert('錯誤', err instanceof Error ? err.message : '重新命名失敗');
       }
     },
     [id, loadSession, loadSessions],
@@ -140,7 +141,7 @@ export default function SessionDetailScreen() {
           router.back();
         }
       } catch (err) {
-        Alert.alert('Error', err instanceof Error ? err.message : 'Failed to delete session');
+        Alert.alert('錯誤', err instanceof Error ? err.message : '刪除失敗');
       }
     },
     [id, loadSessions, router],
@@ -155,8 +156,8 @@ export default function SessionDetailScreen() {
     if (isLoading) {
       return (
         <View style={styles.centeredContent}>
-          <ActivityIndicator size="large" color="#ff3b30" />
-          <Text style={styles.loadingText}>Loading session...</Text>
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text style={styles.loadingText}>載入中...</Text>
         </View>
       );
     }
@@ -164,9 +165,9 @@ export default function SessionDetailScreen() {
     if (!session) {
       return (
         <View style={styles.centeredContent}>
-          <Text style={styles.errorTitle}>Session Not Found</Text>
+          <Text style={styles.errorTitle}>找不到看診紀錄</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.backButtonText}>返回</Text>
           </TouchableOpacity>
         </View>
       );
@@ -175,9 +176,9 @@ export default function SessionDetailScreen() {
     if (session.status === 'processing') {
       return (
         <View style={styles.centeredContent}>
-          <ActivityIndicator size="large" color="#ff3b30" />
-          <Text style={styles.processingTitle}>Generating SOAP note...</Text>
-          <Text style={styles.processingSubtitle}>This may take a moment</Text>
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text style={styles.processingTitle}>正在生成 SOAP 病歷...</Text>
+          <Text style={styles.processingSubtitle}>請稍候</Text>
         </View>
       );
     }
@@ -185,9 +186,9 @@ export default function SessionDetailScreen() {
     if (session.status === 'failed') {
       return (
         <View style={styles.centeredContent}>
-          <Text style={styles.failedIcon}>⚠️</Text>
-          <Text style={styles.errorTitle}>SOAP Generation Failed</Text>
-          <Text style={styles.errorSubtitle}>Transcript saved successfully</Text>
+          <WarningIcon size={48} color="#f59e0b" />
+          <Text style={styles.errorTitle}>SOAP 生成失敗</Text>
+          <Text style={styles.errorSubtitle}>轉錄稿已儲存</Text>
           <View style={styles.failedActions}>
             <TouchableOpacity
               style={[styles.actionButton, styles.retryButton]}
@@ -198,19 +199,21 @@ export default function SessionDetailScreen() {
               {isRetrying ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.retryButtonText}>↺  Retry SOAP</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <RetryIcon size={16} color="#ffffff" />
+                  <Text style={styles.retryButtonText}>重試 SOAP</Text>
+                </View>
               )}
             </TouchableOpacity>
             {session.raw_transcript && (
               <TouchableOpacity
                 style={[styles.actionButton, styles.transcriptButton]}
                 onPress={() => {
-                  // Show raw transcript in an alert (or could switch to transcript tab)
-                  Alert.alert('Transcript', session.raw_transcript ?? '');
+                  Alert.alert('轉錄稿', session.raw_transcript ?? '');
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.transcriptButtonText}>View Transcript</Text>
+                <Text style={styles.transcriptButtonText}>檢視轉錄稿</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -227,12 +230,37 @@ export default function SessionDetailScreen() {
       );
     }
 
-    // Fallback for other statuses
+    // Fallback for incomplete/abandoned sessions
     return (
       <View style={styles.centeredContent}>
-        <Text style={styles.statusText}>
-          Session status: <Text style={styles.statusBadge}>{session.status}</Text>
+        <WarningIcon size={48} color="#94a3b8" />
+        <Text style={styles.errorTitle}>未完成的看診</Text>
+        <Text style={styles.errorSubtitle}>
+          此看診紀錄未完成，可能已中斷或放棄。
         </Text>
+        {session.raw_transcript ? (
+          <View style={styles.failedActions}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.retryButton]}
+              onPress={() => void handleRetry()}
+              disabled={isRetrying}
+              activeOpacity={0.7}
+            >
+              {isRetrying ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <RetryIcon size={16} color="#ffffff" />
+                  <Text style={styles.retryButtonText}>生成 SOAP</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>返回</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -246,17 +274,17 @@ export default function SessionDetailScreen() {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.hamburger}
         >
-          <Text style={styles.hamburgerIcon}>☰</Text>
+          <MenuIcon color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          {session ? formatSessionTitle(session) : 'Session'}
+          {session ? formatSessionTitle(session) : '看診紀錄'}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.backArrow}
         >
-          <Text style={styles.backArrowText}>‹ Back</Text>
+          <Text style={styles.backArrowText}>‹ 返回</Text>
         </TouchableOpacity>
       </View>
 
@@ -280,41 +308,42 @@ export default function SessionDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#f1f5f9',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1c1c1e',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   hamburger: {
     width: 60,
     alignItems: 'flex-start',
   },
-  hamburgerIcon: {
-    color: '#ffffff',
-    fontSize: 22,
-  },
   headerTitle: {
     flex: 1,
-    color: '#ffffff',
+    color: '#0f172a',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
     marginHorizontal: 8,
+    letterSpacing: -0.2,
   },
   backArrow: {
     width: 60,
     alignItems: 'flex-end',
   },
   backArrowText: {
-    color: '#ff3b30',
+    color: '#3B82F6',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -323,53 +352,57 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: 32,
     gap: 12,
   },
   loadingText: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 15,
+    fontWeight: '500',
     marginTop: 8,
   },
   processingTitle: {
-    color: '#ffffff',
+    color: '#0f172a',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     marginTop: 8,
   },
   processingSubtitle: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 14,
+    fontWeight: '500',
   },
   failedIcon: {
     fontSize: 48,
     marginBottom: 8,
   },
   errorTitle: {
-    color: '#ffffff',
+    color: '#0f172a',
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
+    letterSpacing: -0.3,
   },
   errorSubtitle: {
-    color: '#8e8e93',
+    color: '#64748b',
     fontSize: 15,
     textAlign: 'center',
+    lineHeight: 22,
   },
   failedActions: {
     width: '100%',
     gap: 12,
-    marginTop: 8,
+    marginTop: 12,
   },
   actionButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: 52,
   },
   retryButton: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: '#3B82F6',
   },
   retryButtonText: {
     color: '#ffffff',
@@ -377,33 +410,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   transcriptButton: {
-    backgroundColor: '#1c1c1e',
-    borderWidth: 1,
-    borderColor: '#2c2c2e',
+    backgroundColor: '#ffffff',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   transcriptButtonText: {
-    color: '#ffffff',
+    color: '#334155',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   backButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#1c1c1e',
-    borderRadius: 10,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
     marginTop: 8,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backButtonText: {
-    color: '#ffffff',
+    color: '#334155',
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   statusText: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 15,
   },
   statusBadge: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: '#0f172a',
+    fontWeight: '700',
   },
 });

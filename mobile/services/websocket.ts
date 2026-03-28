@@ -11,7 +11,7 @@ export interface WebSocketCallbacks {
 }
 
 const HEARTBEAT_INTERVAL_MS = 5_000;
-const PONG_TIMEOUT_MS = 10_000;
+const PONG_TIMEOUT_MS = 30_000;
 const RECONNECT_DELAY_MS = 2_000;
 const MAX_RECONNECT_ATTEMPTS = 3;
 
@@ -48,6 +48,7 @@ class VetScribeWebSocket {
   }
 
   sendStop(): void {
+    this.stopHeartbeat();
     this.send({ type: 'stop' });
   }
 
@@ -81,7 +82,9 @@ class VetScribeWebSocket {
     };
 
     ws.onerror = () => {
-      this.callbacks?.onError('WebSocket connection error');
+      // Don't fire onError here — let onclose handle reconnection.
+      // Firing onError resets the UI to idle which kills the session.
+      console.warn('WebSocket error — will attempt reconnect via onclose');
     };
 
     ws.onclose = () => {
@@ -132,7 +135,9 @@ class VetScribeWebSocket {
         this.callbacks?.onTranscript(String(data.text ?? ''));
         break;
       case 'soap':
+        this.isIntentionalClose = true;
         this.callbacks?.onSoap(data.data as SoapNote);
+        this.disconnect();
         break;
       case 'pong':
         // Clear the pong timeout so we don't treat this as dropped

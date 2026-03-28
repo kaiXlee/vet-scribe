@@ -11,6 +11,13 @@ logger = logging.getLogger(__name__)
 
 _openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Vocab primer biases Whisper toward recognizing English medical terms within Chinese speech.
+_VOCAB_PRIMER = (
+    "獸醫診所 consultation, blood test, CBC, BUN, creatinine, ALT, AST, glucose, "
+    "X-Ray, ultrasound, ECG, CT scan, kidney, liver, pancreas, heart, lung, "
+    "diabetes, pancreatitis, renal failure, body weight, temperature, heart rate"
+)
+
 
 async def transcribe_chunk(audio_bytes: bytes, previous_transcript: str = "") -> str:
     """
@@ -31,8 +38,9 @@ async def transcribe_chunk(audio_bytes: bytes, previous_transcript: str = "") ->
     if not audio_bytes:
         return ""
 
-    # Use the last 200 chars of the previous transcript as context prompt
-    context_prompt = previous_transcript[-200:] if previous_transcript else ""
+    # Vocab primer + last 200 chars of previous transcript for context
+    context_tail = previous_transcript[-200:] if previous_transcript else ""
+    context_prompt = _VOCAB_PRIMER + " " + context_tail if context_tail else _VOCAB_PRIMER
 
     try:
         # Write bytes to a named temp file — the OpenAI SDK requires a file-like
@@ -46,9 +54,18 @@ async def transcribe_chunk(audio_bytes: bytes, previous_transcript: str = "") ->
                 response = await _openai_client.audio.transcriptions.create(
                     model="whisper-1",
                     file=audio_file,
-                    prompt=context_prompt if context_prompt else None,
+                    prompt=context_prompt,
+                    response_format="verbose_json",
                 )
-            return response.text or ""
+
+            # Filter out segments where Whisper thinks there's no speech
+            segments = response.segments or []
+            real_text = []
+            for seg in segments:
+                if getattr(seg, "no_speech_prob", 0.0) < 0.6:
+                    real_text.append(seg.text)
+
+            return "".join(real_text).strip()
         finally:
             # Always clean up the temp file
             os.unlink(tmp_path)

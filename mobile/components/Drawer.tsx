@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import type { Session } from '../services/api';
+import { CloseIcon, GearIcon, MenuIcon } from './Icons';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -75,7 +76,7 @@ export default function Drawer({
       if (Platform.OS === 'ios') {
         ActionSheetIOS.showActionSheetWithOptions(
           {
-            options: ['Cancel', 'Rename', 'Delete'],
+            options: ['取消', '重新命名', '刪除'],
             cancelButtonIndex: 0,
             destructiveButtonIndex: 2,
             title: currentName,
@@ -89,11 +90,11 @@ export default function Drawer({
           },
         );
       } else {
-        Alert.alert(currentName, 'Choose an action', [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Rename', onPress: () => handleRename(session.id, currentName) },
+        Alert.alert(currentName, '選擇操作', [
+          { text: '取消', style: 'cancel' },
+          { text: '重新命名', onPress: () => handleRename(session.id, currentName) },
           {
-            text: 'Delete',
+            text: '刪除',
             style: 'destructive',
             onPress: () => handleDelete(session.id, currentName),
           },
@@ -107,8 +108,8 @@ export default function Drawer({
   const handleRename = (id: string, currentName: string) => {
     if (Platform.OS === 'ios') {
       Alert.prompt(
-        'Rename Session',
-        'Enter a new name for this session',
+        '重新命名',
+        '輸入新名稱',
         (newName) => {
           if (newName && newName.trim()) {
             onRenameSession(id, newName.trim());
@@ -119,20 +120,20 @@ export default function Drawer({
       );
     } else {
       // Android fallback — Alert with plain text
-      Alert.alert('Rename Session', 'Rename is not supported on Android in this version.', [
-        { text: 'OK' },
+      Alert.alert('重新命名', '此版本尚不支援 Android 重新命名功能。', [
+        { text: '確定' },
       ]);
     }
   };
 
   const handleDelete = (id: string, name: string) => {
     Alert.alert(
-      'Delete Session',
-      `Are you sure you want to delete "${name}"? This cannot be undone.`,
+      '刪除紀錄',
+      `確定要刪除「${name}」嗎？此操作無法復原。`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: '取消', style: 'cancel' },
         {
-          text: 'Delete',
+          text: '刪除',
           style: 'destructive',
           onPress: () => onDeleteSession(id),
         },
@@ -155,23 +156,26 @@ export default function Drawer({
       <Animated.View style={[styles.drawer, { transform: [{ translateX }] }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>☰ Menu</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <MenuIcon size={18} color="#0f172a" />
+            <Text style={styles.headerTitle}>選單</Text>
+          </View>
           <TouchableOpacity onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Text style={styles.closeButton}>✕</Text>
+            <CloseIcon color="#94a3b8" />
           </TouchableOpacity>
         </View>
 
         {/* New Session */}
         <TouchableOpacity style={styles.newSessionButton} onPress={onNewSession} activeOpacity={0.7}>
-          <Text style={styles.newSessionText}>+ New Session</Text>
+          <Text style={styles.newSessionText}>+ 新增看診</Text>
         </TouchableOpacity>
 
         {/* History */}
-        <Text style={styles.historyLabel}>History</Text>
+        <Text style={styles.historyLabel}>歷史紀錄</Text>
 
         <ScrollView style={styles.sessionList} showsVerticalScrollIndicator={false}>
           {sessions.length === 0 ? (
-            <Text style={styles.emptyText}>No sessions yet</Text>
+            <Text style={styles.emptyText}>尚無看診紀錄</Text>
           ) : (
             sessions.map((session) => (
               <TouchableOpacity
@@ -209,9 +213,12 @@ export default function Drawer({
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.settingsButton}
-            onPress={() => Alert.alert('Settings', 'Coming soon!')}
+            onPress={() => Alert.alert('設定', '即將推出！')}
           >
-            <Text style={styles.settingsText}>⚙ Settings</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <GearIcon size={16} color="#94a3b8" />
+              <Text style={styles.settingsText}>設定</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -222,7 +229,7 @@ export default function Drawer({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000000',
+    backgroundColor: '#0f172a',
   },
   drawer: {
     position: 'absolute',
@@ -230,40 +237,39 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: '#1c1c1e',
-    shadowColor: '#000',
-    shadowOffset: { width: 4, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 16,
+    backgroundColor: '#ffffff',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 8, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    elevation: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#2c2c2e',
+    paddingHorizontal: 24,
+    paddingTop: 64,
+    paddingBottom: 20,
   },
   headerTitle: {
-    color: '#ffffff',
-    fontSize: 18,
+    color: '#0f172a',
+    fontSize: 17,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   closeButton: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 18,
   },
   newSessionButton: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
-    paddingVertical: 12,
+    marginHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 12,
+    paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: '#ff3b30',
-    borderRadius: 10,
+    backgroundColor: '#3B82F6',
+    borderRadius: 14,
     alignItems: 'center',
   },
   newSessionText: {
@@ -272,13 +278,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   historyLabel: {
-    color: '#8e8e93',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.8,
+    color: '#94a3b8',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    marginHorizontal: 20,
-    marginTop: 16,
+    marginHorizontal: 24,
+    marginTop: 20,
     marginBottom: 8,
   },
   sessionList: {
@@ -286,17 +292,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   emptyText: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: 32,
+    fontWeight: '500',
   },
   sessionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 2,
   },
   sessionItemContent: {
@@ -304,14 +311,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   sessionName: {
-    color: '#ffffff',
+    color: '#0f172a',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 3,
   },
   sessionDate: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 12,
+    fontWeight: '500',
   },
   statusDot: {
     width: 8,
@@ -319,24 +327,25 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusCompleted: {
-    backgroundColor: '#30d158',
+    backgroundColor: '#22c55e',
   },
   statusFailed: {
-    backgroundColor: '#ff3b30',
+    backgroundColor: '#ef4444',
   },
   statusOther: {
-    backgroundColor: '#8e8e93',
+    backgroundColor: '#cbd5e1',
   },
   footer: {
-    padding: 20,
+    padding: 24,
     borderTopWidth: 1,
-    borderTopColor: '#2c2c2e',
+    borderTopColor: '#f1f5f9',
   },
   settingsButton: {
     paddingVertical: 8,
   },
   settingsText: {
-    color: '#8e8e93',
+    color: '#94a3b8',
     fontSize: 15,
+    fontWeight: '500',
   },
 });

@@ -64,8 +64,8 @@ async def _upload_audio_to_s3(
     try:
         key = await asyncio.to_thread(_do_upload)
         return key
-    except ClientError as exc:
-        logger.error("S3 upload failed for session %s: %s", session_id, exc)
+    except Exception as exc:
+        logger.warning("S3 upload skipped for session %s: %s", session_id, exc)
         return None
 
 
@@ -157,7 +157,13 @@ async def websocket_session(websocket: WebSocket, session_id: uuid.UUID) -> None
     # --- 4. Message loop ---
     try:
         while True:
-            message = await websocket.receive()
+            try:
+                message = await websocket.receive()
+            except RuntimeError:
+                break
+
+            if message.get("type") == "websocket.disconnect":
+                break
 
             # ---- Binary frame: raw audio bytes ----
             if "bytes" in message and message["bytes"] is not None:

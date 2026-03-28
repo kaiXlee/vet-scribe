@@ -7,7 +7,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#0a0a0a' },
+          contentStyle: { backgroundColor: '#f1f5f9' },
         }}
       />
     </GestureHandlerRootView>

@@ -1,12 +1,12 @@
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 interface AudioChunkCallback {
   onChunk: (base64Audio: string) => void;
   onError: (error: Error) => void;
 }
 
-const CHUNK_INTERVAL_MS = 10_000;
+const CHUNK_INTERVAL_MS = 5_000;
 
 const RECORDING_OPTIONS: Audio.RecordingOptions = {
   android: {
@@ -116,7 +116,7 @@ class AudioRecorder {
         const uri = previousRecording.getURI();
         if (uri) {
           const base64 = await FileSystem.readAsStringAsync(uri, {
-            encoding: FileSystem.EncodingType.Base64,
+            encoding: 'base64',
           });
           this.callbacks?.onChunk(base64);
           // Clean up the temporary file
@@ -150,7 +150,7 @@ class AudioRecorder {
       const uri = current.getURI();
       if (uri) {
         const base64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
+          encoding: 'base64',
         });
         this.callbacks?.onChunk(base64);
         await FileSystem.deleteAsync(uri, { idempotent: true });

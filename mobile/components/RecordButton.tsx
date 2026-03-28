@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { MicIcon } from './Icons';
 
 interface RecordButtonProps {
   onPress: () => void;
@@ -48,8 +49,8 @@ export default function RecordButton({ onPress, disabled = false }: RecordButton
         ]}
       >
         <View style={styles.inner}>
-          <Text style={styles.icon}>🎙</Text>
-          <Text style={[styles.label, disabled && styles.labelDisabled]}>REC</Text>
+          <MicIcon size={36} color="#ffffff" />
+          <Text style={[styles.label, disabled && styles.labelDisabled]}>錄音</Text>
         </View>
       </Animated.View>
     </TouchableWithoutFeedback>
@@ -61,35 +62,33 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#1c1c1e',
-    borderWidth: 3,
-    borderColor: '#ff3b30',
+    backgroundColor: '#ef4444',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#ff3b30',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   buttonDisabled: {
-    borderColor: '#3a3a3c',
+    backgroundColor: '#cbd5e1',
     shadowOpacity: 0,
   },
   inner: {
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   icon: {
     fontSize: 36,
   },
   label: {
-    color: '#ff3b30',
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 2,
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 2.5,
   },
   labelDisabled: {
-    color: '#3a3a3c',
+    color: '#e2e8f0',
   },
 });
